@@ -60,10 +60,17 @@ class InterfazConsola:
             password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
             password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
 
-        correo = input("Ingrese su correo electrónico: ")
-        numero = input("Ingrese su número de teléfono: ")
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
+        correo = input("Ingrese su correo electrónico: ")
+
+        while servicio_autenticacion.correo_registrado(correo):
+            print("Ese correo ya está registrado. Inténtelo de nuevo.")
+            correo = input("Ingrese su correo electrónico: ")
+
+        numero = input("Ingrese su número de teléfono: ")
+
         servicio_autenticacion.registrar_usuario(nombre, password, correo, numero)
+
         print("Usuario registrado exitosamente.")
         self.iniciar_sesion()
 
@@ -78,9 +85,15 @@ class InterfazConsola:
             password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
             password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
 
-        correo = input("Ingrese su correo electrónico: ")
-        numero = input("Ingrese su número de teléfono: ")
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
+        correo = input("Ingrese su correo electrónico: ")
+
+        while servicio_autenticacion.correo_registrado(correo):
+            print("Ese correo ya está registrado. Inténtelo de nuevo.")
+            correo = input("Ingrese su correo electrónico: ")
+
+        numero = input("Ingrese su número de teléfono: ")
+
         servicio_autenticacion.registrar_empleado(nombre, password, correo, numero)
         print("Empleado registrado exitosamente.")
         self.iniciar_sesion()

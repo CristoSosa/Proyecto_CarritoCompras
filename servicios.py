@@ -17,14 +17,22 @@ class ServicioAutenticacion:
         self.repositorio_empleados = RepositorioEmpleados(conexion)
 
     def registrar_usuario(self, nombre, contrasena, correo, numero):
+        if self.correo_registrado(correo):
+            return False
+        
         contrasena_encriptada = self._encriptar_contrasena(contrasena)
         self.repositorio_usuarios.crear(nombre, contrasena_encriptada, correo, numero)
         self.conexion.commit()
+        return True
 
     def registrar_empleado(self, nombre, contrasena, correo, numero):
+        if self.correo_registrado(correo):
+            return False
+        
         contrasena_encriptada = self._encriptar_contrasena(contrasena)
         self.repositorio_empleados.crear(nombre, contrasena_encriptada, correo, numero)
         self.conexion.commit()
+        return True
 
     def iniciar_sesion(self, correo, contrasena):
         usuario = self.repositorio_usuarios.buscar_por_correo(correo)
@@ -45,6 +53,11 @@ class ServicioAutenticacion:
             contrasena_guardada = contrasena_guardada.encode("utf-8")
 
         return bcrypt.checkpw(contrasena.encode("utf-8"), contrasena_guardada)
+    
+    def correo_registrado(self, correo):
+        usuario = self.repositorio_usuarios.buscar_por_correo(correo)
+        empleado = self.repositorio_empleados.buscar_por_correo(correo)
+        return usuario is not None or empleado is not None
 
 
 class ServicioInventario:
