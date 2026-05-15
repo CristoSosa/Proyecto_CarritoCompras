@@ -4,10 +4,12 @@ import sys
 from base_datos import BaseDatos
 from interfaz import leer_contrasena
 from repositorios import (
+    RepositorioCarrito,
     RepositorioCategorias,
     RepositorioEmpleados,
     RepositorioProductos,
     RepositorioUsuarios,
+    RepositorioVentas,
 )
 
 base_datos = BaseDatos()
@@ -183,6 +185,7 @@ def compra(name, userID, cursorDB, conexion):
     try:
         repositorio_categorias = RepositorioCategorias(conexion)
         repositorio_productos = RepositorioProductos(conexion)
+        repositorio_carrito = RepositorioCarrito(conexion)
         print("\n¿Qué te interesa hoy? He aquí nuestras secciones:\n")
         categorias = repositorio_categorias.listar_id_nombre()
         print("[------------CATEGORÍAS------------]")
@@ -206,8 +209,8 @@ def compra(name, userID, cursorDB, conexion):
                         cantidad_disponible = producto[3]
                         if unidades <= cantidad_disponible:
                             nueva_cantidad = cantidad_disponible - unidades
-                            cursorDB.execute("INSERT INTO Carrito_Compras VALUES (?,?,?,?)", [None, userID[0], opcion2, unidades])
-                            cursorDB.execute("UPDATE PRODUCTOS SET CANTIDAD = ? WHERE ID = ?", (nueva_cantidad, opcion2))
+                            repositorio_carrito.agregar(userID[0], opcion2, unidades)
+                            repositorio_productos.actualizar_cantidad(opcion2, nueva_cantidad)
                             conexion.commit()
                             print("Se ha añadido al carrito.")
                         else:
@@ -226,15 +229,10 @@ def compra(name, userID, cursorDB, conexion):
         
 def venta(name, userID, cursorDB, conexion):
     try:
+        repositorio_carrito = RepositorioCarrito(conexion)
+        repositorio_ventas = RepositorioVentas(conexion)
         print("[---------Carrito de ", name[0],"----------]")
-        cursorDB.execute("""
-            SELECT Carrito_Compras.ID, PRODUCTOS.NOMBRE_ARTICULO, PRODUCTOS.PRECIO, Carrito_Compras.CANTIDAD, CATEGORIA.NOMBRE
-            FROM Carrito_Compras
-            INNER JOIN PRODUCTOS ON Carrito_Compras.PRODUCTO_ID = PRODUCTOS.ID
-            INNER JOIN CATEGORIA ON PRODUCTOS.CATEGORIA_ID = CATEGORIA.ID
-            WHERE Carrito_Compras.USER_ID = ?
-            """, (userID[0],)) 
-        cosas_carrito = cursorDB.fetchall()
+        cosas_carrito = repositorio_carrito.listar_por_usuario(userID[0])
         for cosa in cosas_carrito:
             print("ID: ", cosa[0], "Producto:", cosa[1], "Categoría:", cosa[4])
         opcion:str = input("\n 1.- Proceder al pago\n 2.- Eliminar artículo\n 3.- Regresar\n")
@@ -249,7 +247,7 @@ def venta(name, userID, cursorDB, conexion):
                 print("Producto:", nombre_producto, "Categoría:", cosa[3], "Cantidad:", cantidad, "Precio unitario:", precio_unidad, "Subtotal:", subtotal)
         elif opcion == "2":
             id_articulo = input("\nIngrese el ID del artículo a eliminar: ")
-            cursorDB.execute("DELETE FROM Carrito_Compras WHERE USER_ID = ? AND ID = ?", (userID[0], id_articulo))
+            repositorio_carrito.eliminar_articulo(userID[0], id_articulo)
             conexion.commit()
             print("\nArtículo eliminado del carrito correctamente.")
             venta(name, userID, cursorDB, conexion)
@@ -261,8 +259,8 @@ def venta(name, userID, cursorDB, conexion):
         print("\nTotal a pagar:", total)
         opcion:str = input("\n¿Desea continuar?\n 1.- Si \n 2.- Regresar\n")
         if opcion == "1":
-            cursorDB.execute("DELETE FROM Carrito_Compras WHERE USER_ID = ?", (userID))
-            cursorDB.execute("INSERT INTO VENTAS VALUES (?,?,?,?)", (None, userID[0], cosa[0], subtotal))
+            repositorio_carrito.vaciar(userID)
+            repositorio_ventas.crear(userID[0], cosa[0], subtotal)
             conexion.commit()
             print("\nCompra realizada con éxito. Pronto llegará a tu casa porque sé dónde vives guap@\n")
             InterfazU(name, userID, cursorDB, conexion)
@@ -296,12 +294,8 @@ def menu():
 
 def mostrar_todas_ventas(name, userID, cursorDB, conexion):
     try:
-        cursorDB.execute("""
-            SELECT VENTAS.ID, USUARIOS.NOMBRE, PRODUCTOS.NOMBRE_ARTICULO, VENTAS.TOTAL FROM VENTAS
-            INNER JOIN USUARIOS ON VENTAS.USUARIO_ID = USUARIOS.ID
-            INNER JOIN PRODUCTOS ON VENTAS.PRODUCTO_ID = PRODUCTOS.ID
-        """)
-        ventas = cursorDB.fetchall()
+        repositorio_ventas = RepositorioVentas(conexion)
+        ventas = repositorio_ventas.listar_todas()
 
         for venta in ventas:
             print("[------------------ Todas las Ventas ------------------]")

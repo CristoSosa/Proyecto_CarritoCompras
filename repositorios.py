@@ -109,3 +109,70 @@ class RepositorioProductos:
     def eliminar(self, producto_id):
         cursor = self.conexion.cursor()
         cursor.execute("DELETE FROM PRODUCTOS WHERE ID = ?", (producto_id,))
+
+    def actualizar_cantidad(self, producto_id, cantidad):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "UPDATE PRODUCTOS SET CANTIDAD = ? WHERE ID = ?",
+            (cantidad, producto_id),
+        )
+
+
+class RepositorioCarrito:
+    def __init__(self, conexion):
+        self.conexion = conexion
+
+    def agregar(self, usuario_id, producto_id, cantidad):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "INSERT INTO Carrito_Compras VALUES (?, ?, ?, ?)",
+            (None, usuario_id, producto_id, cantidad),
+        )
+
+    def listar_por_usuario(self, usuario_id):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            """
+            SELECT Carrito_Compras.ID, PRODUCTOS.NOMBRE_ARTICULO, PRODUCTOS.PRECIO, Carrito_Compras.CANTIDAD, CATEGORIA.NOMBRE
+            FROM Carrito_Compras
+            INNER JOIN PRODUCTOS ON Carrito_Compras.PRODUCTO_ID = PRODUCTOS.ID
+            INNER JOIN CATEGORIA ON PRODUCTOS.CATEGORIA_ID = CATEGORIA.ID
+            WHERE Carrito_Compras.USER_ID = ?
+            """,
+            (usuario_id,),
+        )
+        return cursor.fetchall()
+
+    def eliminar_articulo(self, usuario_id, articulo_id):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "DELETE FROM Carrito_Compras WHERE USER_ID = ? AND ID = ?",
+            (usuario_id, articulo_id),
+        )
+
+    def vaciar(self, usuario_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("DELETE FROM Carrito_Compras WHERE USER_ID = ?", (usuario_id,))
+
+
+class RepositorioVentas:
+    def __init__(self, conexion):
+        self.conexion = conexion
+
+    def crear(self, usuario_id, producto_id, total):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "INSERT INTO VENTAS VALUES (?, ?, ?, ?)",
+            (None, usuario_id, producto_id, total),
+        )
+
+    def listar_todas(self):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            """
+            SELECT VENTAS.ID, USUARIOS.NOMBRE, PRODUCTOS.NOMBRE_ARTICULO, VENTAS.TOTAL FROM VENTAS
+            INNER JOIN USUARIOS ON VENTAS.USUARIO_ID = USUARIOS.ID
+            INNER JOIN PRODUCTOS ON VENTAS.PRODUCTO_ID = PRODUCTOS.ID
+            """
+        )
+        return cursor.fetchall()
