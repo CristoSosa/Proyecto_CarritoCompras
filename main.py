@@ -1,7 +1,10 @@
-import sqlite3
 import bcrypt
 import msvcrt
 import sys
+
+from base_datos import BaseDatos
+
+base_datos = BaseDatos()
 
 def input_password(mensaje):
     print(mensaje, end="", flush=True)
@@ -30,14 +33,6 @@ def input_password(mensaje):
 
         password += caracter
         print("*", end="", flush=True)
-
-def connect_database():
-    conexion = sqlite3.connect('DataBaseMercado.db')
-    cursorDB = conexion.cursor()
-    return conexion, cursorDB
-
-def close_database(conexion):
-    conexion.close()
 
 def register_user(cursorDB, conexion):
     print("[-------¡Holaaaa!, Bienvenid@ nuevo usuario a nuestra app MercadoVentas-------]") 
@@ -80,7 +75,7 @@ def register_admin(cursorDB, conexion):
 def login():
     print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
     mail = input("Ingrese su correo: ")
-    conexion, cursorDB = connect_database()
+    conexion, cursorDB = base_datos.conectar()
     password = input_password("Ingrese su contraseña: ")
     cursorDB.execute("SELECT CORREO, CONTRASENA FROM USUARIOS WHERE CORREO = ?", (mail,))
     user = cursorDB.fetchone() 
@@ -105,7 +100,7 @@ def login():
             Interfaz(name, userID, cursorDB, conexion)
             return
     print("Lo siento, los datos proporcionados no coinciden, favor de intentarlo denuevo")
-    close_database(conexion)
+    base_datos.cerrar(conexion)
     login()
 
 def InterfazU(name, userID, cursorDB, conexion):
@@ -343,6 +338,6 @@ def mostrar_todas_ventas(name, userID, cursorDB, conexion):
     except Exception as e:
         print("Error en la base de datos:", e)
     Interfaz(name, userID, cursorDB, conexion)
-conexion, cursorDB = connect_database()
+conexion, cursorDB = base_datos.conectar()
 menu()
-close_database(conexion)
+base_datos.cerrar(conexion)
