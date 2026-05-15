@@ -1,4 +1,3 @@
-import bcrypt
 import sys
 
 from base_datos import BaseDatos
@@ -6,11 +5,10 @@ from interfaz import leer_contrasena
 from repositorios import (
     RepositorioCarrito,
     RepositorioCategorias,
-    RepositorioEmpleados,
     RepositorioProductos,
-    RepositorioUsuarios,
     RepositorioVentas,
 )
+from servicios import ServicioAutenticacion
 
 base_datos = BaseDatos()
 
@@ -23,14 +21,10 @@ def register_user(cursorDB, conexion):
         print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
         password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
         passwordC = leer_contrasena("Confirma tu contraseña: ")
-    pwd = password.encode('utf-8')
-    encrypt1 = bcrypt.gensalt()
-    contraEncriptada = bcrypt.hashpw(pwd, encrypt1)     
     mail = input("Ingrese su correo electrónico: ")
     numeroT = input("Ingrese su número de teléfono: ")
-    repositorio_usuarios = RepositorioUsuarios(conexion)
-    repositorio_usuarios.crear(name, contraEncriptada, mail, numeroT)
-    conexion.commit()
+    servicio_autenticacion = ServicioAutenticacion(conexion)
+    servicio_autenticacion.registrar_usuario(name, password, mail, numeroT)
     print("Usuario registrado exitosamente.")
     login()
 
@@ -43,14 +37,10 @@ def register_admin(cursorDB, conexion):
         print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
         password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
         passwordC = leer_contrasena("Confirma tu contraseña: ")    
-    pwd = password.encode('utf-8')
-    encrypt2 = bcrypt.gensalt()
-    contraEncriptada = bcrypt.hashpw(pwd, encrypt2)    
     mail = input("Ingrese su correo electrónico: ")
     numeroT = input("Ingrese su número de teléfono: ")
-    repositorio_empleados = RepositorioEmpleados(conexion)
-    repositorio_empleados.crear(name, contraEncriptada, mail, numeroT)
-    conexion.commit()
+    servicio_autenticacion = ServicioAutenticacion(conexion)
+    servicio_autenticacion.registrar_empleado(name, password, mail, numeroT)
     print("Empleado registrado exitosamente.")
     login()
 
@@ -59,24 +49,17 @@ def login():
     mail = input("Ingrese su correo: ")
     conexion, cursorDB = base_datos.conectar()
     password = leer_contrasena("Ingrese su contraseña: ")
-    repositorio_usuarios = RepositorioUsuarios(conexion)
-    repositorio_empleados = RepositorioEmpleados(conexion)
-    user = repositorio_usuarios.buscar_por_correo(mail) 
-    if user:
-        stored_password = user[2]
-        if bcrypt.checkpw(password.encode('utf-8'), stored_password):
-            name = (user[1],)
-            userID = (user[0],)
-            InterfazU(name, userID, cursorDB, conexion)
-            return
-    empleado = repositorio_empleados.buscar_por_correo(mail)
-    if empleado:
-        stored_password = empleado[2]
-        if bcrypt.checkpw(password.encode('utf-8'), stored_password):
-            name = (empleado[1],)
-            userID = (empleado[0],)
-            Interfaz(name, userID, cursorDB, conexion)
-            return
+    servicio_autenticacion = ServicioAutenticacion(conexion)
+    tipo_usuario, name, userID = servicio_autenticacion.iniciar_sesion(mail, password)
+
+    if tipo_usuario == "usuario":
+        InterfazU(name, userID, cursorDB, conexion)
+        return
+
+    if tipo_usuario == "empleado":
+        Interfaz(name, userID, cursorDB, conexion)
+        return
+
     print("Lo siento, los datos proporcionados no coinciden, favor de intentarlo denuevo")
     base_datos.cerrar(conexion)
     login()
