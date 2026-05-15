@@ -2,13 +2,12 @@ import sys
 
 from base_datos import BaseDatos
 from interfaz import leer_contrasena
-from repositorios import (
-    RepositorioCarrito,
-    RepositorioCategorias,
-    RepositorioProductos,
-    RepositorioVentas,
+from servicios import (
+    ServicioAutenticacion,
+    ServicioCompras,
+    ServicioInventario,
+    ServicioVentas,
 )
-from servicios import ServicioAutenticacion, ServicioInventario
 
 base_datos = BaseDatos()
 
@@ -161,18 +160,16 @@ def Categorias(name, userID, cursorDB, conexion):
 
 def compra(name, userID, cursorDB, conexion):
     try:
-        repositorio_categorias = RepositorioCategorias(conexion)
-        repositorio_productos = RepositorioProductos(conexion)
-        repositorio_carrito = RepositorioCarrito(conexion)
+        servicio_compras = ServicioCompras(conexion)
         print("\n¿Qué te interesa hoy? He aquí nuestras secciones:\n")
-        categorias = repositorio_categorias.listar_id_nombre()
+        categorias = servicio_compras.listar_categorias_id_nombre()
         print("[------------CATEGORÍAS------------]")
         for categoria in categorias:
             print("______________________________________")
             print(f"ID: {categoria[0]} [",categoria[1],"]")
             print("______________________________________")
         opcion = input("\nSelecciona la categoría que más te interese: ")
-        productos = repositorio_productos.listar_por_categoria(opcion)
+        productos = servicio_compras.listar_productos_por_categoria(opcion)
         print("[-------------------------------PRODUCTOS------------------------------]")
         for producto in productos:  
             print("________________________________________________________________________")
@@ -187,9 +184,7 @@ def compra(name, userID, cursorDB, conexion):
                         cantidad_disponible = producto[3]
                         if unidades <= cantidad_disponible:
                             nueva_cantidad = cantidad_disponible - unidades
-                            repositorio_carrito.agregar(userID[0], opcion2, unidades)
-                            repositorio_productos.actualizar_cantidad(opcion2, nueva_cantidad)
-                            conexion.commit()
+                            servicio_compras.agregar_al_carrito(userID[0], opcion2, unidades, nueva_cantidad)
                             print("Se ha añadido al carrito.")
                         else:
                             print("\nLo siento, no hay suficiente stock para esa cantidad.\n")
@@ -207,10 +202,10 @@ def compra(name, userID, cursorDB, conexion):
         
 def venta(name, userID, cursorDB, conexion):
     try:
-        repositorio_carrito = RepositorioCarrito(conexion)
-        repositorio_ventas = RepositorioVentas(conexion)
+        servicio_compras = ServicioCompras(conexion)
+        servicio_ventas = ServicioVentas(conexion)
         print("[---------Carrito de ", name[0],"----------]")
-        cosas_carrito = repositorio_carrito.listar_por_usuario(userID[0])
+        cosas_carrito = servicio_compras.listar_carrito(userID[0])
         for cosa in cosas_carrito:
             print("ID: ", cosa[0], "Producto:", cosa[1], "Categoría:", cosa[4])
         opcion:str = input("\n 1.- Proceder al pago\n 2.- Eliminar artículo\n 3.- Regresar\n")
@@ -225,8 +220,7 @@ def venta(name, userID, cursorDB, conexion):
                 print("Producto:", nombre_producto, "Categoría:", cosa[3], "Cantidad:", cantidad, "Precio unitario:", precio_unidad, "Subtotal:", subtotal)
         elif opcion == "2":
             id_articulo = input("\nIngrese el ID del artículo a eliminar: ")
-            repositorio_carrito.eliminar_articulo(userID[0], id_articulo)
-            conexion.commit()
+            servicio_compras.eliminar_articulo_carrito(userID[0], id_articulo)
             print("\nArtículo eliminado del carrito correctamente.")
             venta(name, userID, cursorDB, conexion)
         elif opcion == "3":
@@ -237,9 +231,7 @@ def venta(name, userID, cursorDB, conexion):
         print("\nTotal a pagar:", total)
         opcion:str = input("\n¿Desea continuar?\n 1.- Si \n 2.- Regresar\n")
         if opcion == "1":
-            repositorio_carrito.vaciar(userID)
-            repositorio_ventas.crear(userID[0], cosa[0], subtotal)
-            conexion.commit()
+            servicio_ventas.registrar_venta(userID[0], cosa[0], subtotal)
             print("\nCompra realizada con éxito. Pronto llegará a tu casa porque sé dónde vives guap@\n")
             InterfazU(name, userID, cursorDB, conexion)
     except Exception as e:
@@ -272,8 +264,8 @@ def menu():
 
 def mostrar_todas_ventas(name, userID, cursorDB, conexion):
     try:
-        repositorio_ventas = RepositorioVentas(conexion)
-        ventas = repositorio_ventas.listar_todas()
+        servicio_ventas = ServicioVentas(conexion)
+        ventas = servicio_ventas.listar_todas()
 
         for venta in ventas:
             print("[------------------ Todas las Ventas ------------------]")

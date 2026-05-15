@@ -1,10 +1,12 @@
 import bcrypt
 
 from repositorios import (
+    RepositorioCarrito,
     RepositorioCategorias,
     RepositorioEmpleados,
     RepositorioProductos,
     RepositorioUsuarios,
+    RepositorioVentas,
 )
 
 
@@ -75,3 +77,44 @@ class ServicioInventario:
     def agregar_categoria(self, nombre, descripcion):
         self.repositorio_categorias.crear(nombre, descripcion)
         self.conexion.commit()
+
+
+class ServicioCompras:
+    def __init__(self, conexion):
+        self.conexion = conexion
+        self.repositorio_categorias = RepositorioCategorias(conexion)
+        self.repositorio_productos = RepositorioProductos(conexion)
+        self.repositorio_carrito = RepositorioCarrito(conexion)
+
+    def listar_categorias_id_nombre(self):
+        return self.repositorio_categorias.listar_id_nombre()
+
+    def listar_productos_por_categoria(self, categoria_id):
+        return self.repositorio_productos.listar_por_categoria(categoria_id)
+
+    def agregar_al_carrito(self, usuario_id, producto_id, unidades, nueva_cantidad):
+        self.repositorio_carrito.agregar(usuario_id, producto_id, unidades)
+        self.repositorio_productos.actualizar_cantidad(producto_id, nueva_cantidad)
+        self.conexion.commit()
+
+    def listar_carrito(self, usuario_id):
+        return self.repositorio_carrito.listar_por_usuario(usuario_id)
+
+    def eliminar_articulo_carrito(self, usuario_id, articulo_id):
+        self.repositorio_carrito.eliminar_articulo(usuario_id, articulo_id)
+        self.conexion.commit()
+
+
+class ServicioVentas:
+    def __init__(self, conexion):
+        self.conexion = conexion
+        self.repositorio_carrito = RepositorioCarrito(conexion)
+        self.repositorio_ventas = RepositorioVentas(conexion)
+
+    def registrar_venta(self, usuario_id, producto_id, total):
+        self.repositorio_carrito.vaciar(usuario_id)
+        self.repositorio_ventas.crear(usuario_id, producto_id, total)
+        self.conexion.commit()
+
+    def listar_todas(self):
+        return self.repositorio_ventas.listar_todas()
