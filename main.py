@@ -3,6 +3,7 @@ import sys
 
 from base_datos import BaseDatos
 from interfaz import leer_contrasena
+from repositorios import RepositorioEmpleados, RepositorioUsuarios
 
 base_datos = BaseDatos()
 
@@ -20,7 +21,8 @@ def register_user(cursorDB, conexion):
     contraEncriptada = bcrypt.hashpw(pwd, encrypt1)     
     mail = input("Ingrese su correo electrónico: ")
     numeroT = input("Ingrese su número de teléfono: ")
-    cursorDB.execute("INSERT INTO USUARIOS VALUES (?,?,?,?,?)", (None, name, contraEncriptada, mail, numeroT))
+    repositorio_usuarios = RepositorioUsuarios(conexion)
+    repositorio_usuarios.crear(name, contraEncriptada, mail, numeroT)
     conexion.commit()
     print("Usuario registrado exitosamente.")
     login()
@@ -39,7 +41,8 @@ def register_admin(cursorDB, conexion):
     contraEncriptada = bcrypt.hashpw(pwd, encrypt2)    
     mail = input("Ingrese su correo electrónico: ")
     numeroT = input("Ingrese su número de teléfono: ")
-    cursorDB.execute("INSERT INTO EMPLEADOS VALUES (?,?,?,?,?,?)", (None, name, contraEncriptada, mail, numeroT, 0.00))
+    repositorio_empleados = RepositorioEmpleados(conexion)
+    repositorio_empleados.crear(name, contraEncriptada, mail, numeroT)
     conexion.commit()
     print("Empleado registrado exitosamente.")
     login()
@@ -49,26 +52,22 @@ def login():
     mail = input("Ingrese su correo: ")
     conexion, cursorDB = base_datos.conectar()
     password = leer_contrasena("Ingrese su contraseña: ")
-    cursorDB.execute("SELECT CORREO, CONTRASENA FROM USUARIOS WHERE CORREO = ?", (mail,))
-    user = cursorDB.fetchone() 
+    repositorio_usuarios = RepositorioUsuarios(conexion)
+    repositorio_empleados = RepositorioEmpleados(conexion)
+    user = repositorio_usuarios.buscar_por_correo(mail) 
     if user:
-        stored_password = user[1]
+        stored_password = user[2]
         if bcrypt.checkpw(password.encode('utf-8'), stored_password):
-            cursorDB.execute("SELECT NOMBRE FROM USUARIOS")
-            name = cursorDB.fetchone()
-            cursorDB.execute("SELECT ID FROM USUARIOS")
-            userID = cursorDB.fetchone()
+            name = (user[1],)
+            userID = (user[0],)
             InterfazU(name, userID, cursorDB, conexion)
             return
-    cursorDB.execute("SELECT CORREO, CONTRASENA FROM EMPLEADOS WHERE CORREO = ?", (mail,))
-    empleado = cursorDB.fetchone()
+    empleado = repositorio_empleados.buscar_por_correo(mail)
     if empleado:
-        stored_password = empleado[1]
+        stored_password = empleado[2]
         if bcrypt.checkpw(password.encode('utf-8'), stored_password):
-            cursorDB.execute("SELECT NOMBRE FROM EMPLEADOS")
-            name = cursorDB.fetchone()
-            cursorDB.execute("SELECT ID FROM USUARIOS")
-            userID = cursorDB.fetchone()
+            name = (empleado[1],)
+            userID = (empleado[0],)
             Interfaz(name, userID, cursorDB, conexion)
             return
     print("Lo siento, los datos proporcionados no coinciden, favor de intentarlo denuevo")
