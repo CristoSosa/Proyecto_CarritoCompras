@@ -50,3 +50,62 @@ class RepositorioEmpleados:
             (correo,),
         )
         return cursor.fetchone()
+
+
+class RepositorioCategorias:
+    def __init__(self, conexion):
+        self.conexion = conexion
+
+    def listar(self):
+        cursor = self.conexion.cursor()
+        cursor.execute("SELECT * FROM CATEGORIA")
+        return cursor.fetchall()
+
+    def listar_id_nombre(self):
+        cursor = self.conexion.cursor()
+        cursor.execute("SELECT ID, NOMBRE FROM CATEGORIA")
+        return cursor.fetchall()
+
+    def crear(self, nombre, descripcion):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "INSERT INTO CATEGORIA VALUES (?, ?, ?)",
+            (None, nombre, descripcion),
+        )
+
+    def eliminar(self, categoria_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("DELETE FROM CATEGORIA WHERE ID = ?", (categoria_id,))
+
+
+class RepositorioProductos:
+    def __init__(self, conexion):
+        self.conexion = conexion
+
+    def listar(self):
+        cursor = self.conexion.cursor()
+        cursor.execute("SELECT * FROM PRODUCTOS")
+        return cursor.fetchall()
+
+    def listar_por_categoria(self, categoria_id):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            """
+            SELECT ID, NOMBRE_ARTICULO, PRECIO, CANTIDAD
+            FROM PRODUCTOS
+            WHERE CATEGORIA_ID = ?
+            """,
+            (categoria_id,),
+        )
+        return cursor.fetchall()
+
+    def crear(self, nombre, precio, cantidad, categoria_id):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "INSERT INTO PRODUCTOS VALUES (?, ?, ?, ?, ?)",
+            (None, nombre, precio, cantidad, categoria_id),
+        )
+
+    def eliminar(self, producto_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("DELETE FROM PRODUCTOS WHERE ID = ?", (producto_id,))

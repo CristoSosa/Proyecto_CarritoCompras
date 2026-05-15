@@ -3,7 +3,12 @@ import sys
 
 from base_datos import BaseDatos
 from interfaz import leer_contrasena
-from repositorios import RepositorioEmpleados, RepositorioUsuarios
+from repositorios import (
+    RepositorioCategorias,
+    RepositorioEmpleados,
+    RepositorioProductos,
+    RepositorioUsuarios,
+)
 
 base_datos = BaseDatos()
 
@@ -105,9 +110,10 @@ def Interfaz(name, userID, cursorDB, conexion):
 
 def Inventario(name, cursorDB, userID, conexion):
     try:
+        repositorio_productos = RepositorioProductos(conexion)
+        repositorio_categorias = RepositorioCategorias(conexion)
         print("\n[-----------Inventario de Productos-----------]\n")
-        cursorDB.execute("SELECT * FROM PRODUCTOS")
-        productos = cursorDB.fetchall()
+        productos = repositorio_productos.listar()
         for producto in productos:
             print("ID:", producto[0])
             print("Nombre:", producto[1])
@@ -118,7 +124,7 @@ def Inventario(name, cursorDB, userID, conexion):
         opcion:str = input("\n 1.- Eliminar producto\n 2.- Añadir producto\n 3.- Volver\n")
         if opcion == "1":
             select:str = input("\nIngrese el ID del producto a eliminar:\n")
-            cursorDB.execute("DELETE FROM PRODUCTOS WHERE ID = ?", (select))
+            repositorio_productos.eliminar(select)
             conexion.commit()
             print("\nProducto eliminado con éxito\n")
             Inventario(name, cursorDB, userID, conexion)
@@ -127,12 +133,11 @@ def Inventario(name, cursorDB, userID, conexion):
             precio:str = input("\nIngrese su precio:\n")
             unidades:str = input("\nIngrese la cantidad a añadir:\n")
             print("\nIngrese el ID de la categoría a la que pertenece  (ID):\n")
-            cursorDB.execute("SELECT ID, NOMBRE FROM CATEGORIA")
-            categorias = cursorDB.fetchall()
+            categorias = repositorio_categorias.listar_id_nombre()
             for categoria in categorias:
                 print("ID:", categoria[0], " NOMBRE: ", categoria[1])
             id_categoria:int = int(input("\n"))
-            cursorDB.execute("INSERT INTO PRODUCTOS VALUES (?,?,?,?,?)", (None, nombre, precio, unidades, id_categoria))
+            repositorio_productos.crear(nombre, precio, unidades, id_categoria)
             conexion.commit()
             print("\nProducto añadido con éxito\n")
             Inventario(name, cursorDB, userID, conexion)
@@ -146,9 +151,9 @@ def Inventario(name, cursorDB, userID, conexion):
 
 def Categorias(name, userID, cursorDB, conexion):
     try:
+        repositorio_categorias = RepositorioCategorias(conexion)
         print("[-----------------Categorías-----------------]")
-        cursorDB.execute("SELECT * FROM CATEGORIA")
-        categorias = cursorDB.fetchall()
+        categorias = repositorio_categorias.listar()
         for categoria in categorias:
             print("ID:", categoria[0])
             print("Nombre:", categoria[1])
@@ -157,17 +162,17 @@ def Categorias(name, userID, cursorDB, conexion):
         opcion = input("\n 1.- Eliminar categoría\n 2.- Añadir categoría\n 3.- Volver\n")
         if opcion == "1":
             select = input("\nIngrese el ID de la categoría a eliminar:\n ")
-            cursorDB.execute("DELETE FROM CATEGORIA WHERE ID = ?", (select))
+            repositorio_categorias.eliminar(select)
             conexion.commit()
             print("Categoría eliminada con éxito")
             Categorias(name, userID, cursorDB, conexion) 
         elif opcion == "2":
             nombre = input("\nIngrese el nombre de la categoría a añadir:\n")
             descripcion = input("\nIngrese su Descripción: \n")
-            cursorDB.execute("INSERT INTO CATEGORIA VALUES (?,?,?)", (None, nombre, descripcion))
+            repositorio_categorias.crear(nombre, descripcion)
             conexion.commit()
             print("\nCategoría añadida con éxito añadido con éxito\n")
-            Categorias(cursorDB, conexion, name, userID, )  
+            Categorias(name, userID, cursorDB, conexion)  
         elif opcion == "3":
             Interfaz(name, userID, cursorDB, conexion,)  
             print("\nOpción inválida crrrrrack, vuelve a intentarlo")
@@ -176,17 +181,17 @@ def Categorias(name, userID, cursorDB, conexion):
 
 def compra(name, userID, cursorDB, conexion):
     try:
+        repositorio_categorias = RepositorioCategorias(conexion)
+        repositorio_productos = RepositorioProductos(conexion)
         print("\n¿Qué te interesa hoy? He aquí nuestras secciones:\n")
-        cursorDB.execute("SELECT ID, NOMBRE FROM CATEGORIA")
-        categorias = cursorDB.fetchall()
+        categorias = repositorio_categorias.listar_id_nombre()
         print("[------------CATEGORÍAS------------]")
         for categoria in categorias:
             print("______________________________________")
             print(f"ID: {categoria[0]} [",categoria[1],"]")
             print("______________________________________")
         opcion = input("\nSelecciona la categoría que más te interese: ")
-        cursorDB.execute("SELECT ID, NOMBRE_ARTICULO, PRECIO, CANTIDAD FROM PRODUCTOS WHERE CATEGORIA_ID = ?", (opcion,))
-        productos = cursorDB.fetchall()
+        productos = repositorio_productos.listar_por_categoria(opcion)
         print("[-------------------------------PRODUCTOS------------------------------]")
         for producto in productos:  
             print("________________________________________________________________________")
