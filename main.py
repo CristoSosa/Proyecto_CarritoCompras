@@ -1,6 +1,6 @@
 import sqlite3
 import bcrypt
-from getpass import getpass
+import msvcrt
 import sys
 
 class User:
@@ -26,6 +26,34 @@ class Carrito:
     def __init__(self):
         self.lista_productos = []
 
+def input_password(mensaje):
+    print(mensaje, end="", flush=True)
+    password = ""
+    while True:
+        tecla = msvcrt.getch()
+
+        if tecla in (b"\r", b"\n"):
+            print()
+            return password
+
+        if tecla == b"\x08":
+            if password:
+                password = password[:-1]
+                print("\b \b", end="", flush=True)
+            continue
+
+        if tecla in (b"\x00", b"\xe0"):
+            msvcrt.getch()
+            continue
+
+        try:
+            caracter = tecla.decode("utf-8")
+        except UnicodeDecodeError:
+            continue
+
+        password += caracter
+        print("*", end="", flush=True)
+
 def connect_database():
     conexion = sqlite3.connect('DataBaseMercado.db')
     cursorDB = conexion.cursor()
@@ -37,12 +65,12 @@ def close_database(conexion):
 def register_user(cursorDB, conexion):
     print("[-------¡Holaaaa!, Bienvenid@ nuevo usuario a nuestra app MercadoVentas-------]") 
     name = input("\nIngrese su nombre completo: ")
-    password = getpass("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-    passwordC = getpass("Confirma tu contraseña: ")
+    password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+    passwordC = input_password("Confirma tu contraseña: ")
     while password != passwordC:
         print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-        password = getpass("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-        passwordC = getpass("Confirma tu contraseña: ")
+        password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+        passwordC = input_password("Confirma tu contraseña: ")
     pwd = password.encode('utf-8')
     encrypt1 = bcrypt.gensalt()
     contraEncriptada = bcrypt.hashpw(pwd, encrypt1)     
@@ -57,12 +85,12 @@ def register_user(cursorDB, conexion):
 def register_admin(cursorDB, conexion):
     print("[-------¡Holaaaa!, Bienvenid@ nuevo empleado a nuestra app MercadoVentas-------]")
     name = input("\nIngrese su nombre completo: ")
-    password = getpass("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-    passwordC = getpass("Confirma tu contraseña: ") 
+    password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+    passwordC = input_password("Confirma tu contraseña: ") 
     while password != passwordC:
         print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-        password = getpass("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-        passwordC = getpass("Confirma tu contraseña: ")    
+        password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+        passwordC = input_password("Confirma tu contraseña: ")    
     pwd = password.encode('utf-8')
     encrypt2 = bcrypt.gensalt()
     contraEncriptada = bcrypt.hashpw(pwd, encrypt2)    
@@ -77,7 +105,7 @@ def login():
     print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
     mail = input("Ingrese su correo: ")
     conexion, cursorDB = connect_database()
-    password = getpass("Ingrese su contraseña: ")
+    password = input_password("Ingrese su contraseña: ")
     cursorDB.execute("SELECT CORREO, CONTRASENA FROM USUARIOS WHERE CORREO = ?", (mail,))
     user = cursorDB.fetchone() 
     if user:
@@ -106,7 +134,7 @@ def login():
 
 def InterfazU(name, userID, cursorDB, conexion):
     print("\n¡Hola de nuevo ", name[0], "!\n ¿Qué desea hacer hoy?\n 1.- Comprar producto\n 2.- Mostrar Carrito\n 3.- Salir al menú")
-    opcion: str = input()
+    opcion: str = input("Escriba su respuesta: ")
     if opcion == "1":
         compra(name, userID, cursorDB, conexion)
     elif opcion == "2":
@@ -120,7 +148,7 @@ def InterfazU(name, userID, cursorDB, conexion):
 
 def Interfaz(name, userID, cursorDB, conexion):
     print("\n¡Hola de nuevo ", name[0],"!\n¿Qué desea hacer hoy?\n 1.- Gestión de inventarios\n 2.- Ver categorías\n 3.- Registro de ventas\n 4.- Salir al menú")
-    opcion: str = input()
+    opcion: str = input("Escriba su respuesta: ")
     if opcion == "1":
         Inventario(name, cursorDB, userID, conexion)
     elif opcion == "2":
@@ -298,15 +326,15 @@ def menu():
     try:
         print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
         print(" 1.- Iniciar sesión\n 2.- Crear una cuenta\n 3.- Salir")
-        opcion: str = input()
+        opcion: str = input("Escriba su respuesta: ")
         if opcion == "1":
             login()
         elif opcion == "2":
             print("\n¿Crear cuenta en el portal de empleados o en el de usuarios?\n 1.- Empleado \n 2.- Usuario")
-            opcion1:str = input()
+            opcion1:str = input("Escriba su respuesta: ")
             if opcion1 == "1":
                 register_admin(cursorDB, conexion)
-            elif opcion == "2":
+            elif opcion1 == "2":
                 register_user(cursorDB, conexion)
             else:
                 print("\nOpción inválida crrrrrack, vuelve a intentarlo")
