@@ -1,6 +1,11 @@
 import bcrypt
 
-from repositorios import RepositorioEmpleados, RepositorioUsuarios
+from repositorios import (
+    RepositorioCategorias,
+    RepositorioEmpleados,
+    RepositorioProductos,
+    RepositorioUsuarios,
+)
 
 
 class ServicioAutenticacion:
@@ -38,3 +43,35 @@ class ServicioAutenticacion:
             contrasena_guardada = contrasena_guardada.encode("utf-8")
 
         return bcrypt.checkpw(contrasena.encode("utf-8"), contrasena_guardada)
+
+
+class ServicioInventario:
+    def __init__(self, conexion):
+        self.conexion = conexion
+        self.repositorio_productos = RepositorioProductos(conexion)
+        self.repositorio_categorias = RepositorioCategorias(conexion)
+
+    def listar_productos(self):
+        return self.repositorio_productos.listar()
+
+    def eliminar_producto(self, producto_id):
+        self.repositorio_productos.eliminar(producto_id)
+        self.conexion.commit()
+
+    def agregar_producto(self, nombre, precio, cantidad, categoria_id):
+        self.repositorio_productos.crear(nombre, precio, cantidad, categoria_id)
+        self.conexion.commit()
+
+    def listar_categorias(self):
+        return self.repositorio_categorias.listar()
+
+    def listar_categorias_id_nombre(self):
+        return self.repositorio_categorias.listar_id_nombre()
+
+    def eliminar_categoria(self, categoria_id):
+        self.repositorio_categorias.eliminar(categoria_id)
+        self.conexion.commit()
+
+    def agregar_categoria(self, nombre, descripcion):
+        self.repositorio_categorias.crear(nombre, descripcion)
+        self.conexion.commit()

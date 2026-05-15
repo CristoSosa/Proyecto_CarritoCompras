@@ -8,7 +8,7 @@ from repositorios import (
     RepositorioProductos,
     RepositorioVentas,
 )
-from servicios import ServicioAutenticacion
+from servicios import ServicioAutenticacion, ServicioInventario
 
 base_datos = BaseDatos()
 
@@ -95,10 +95,9 @@ def Interfaz(name, userID, cursorDB, conexion):
 
 def Inventario(name, cursorDB, userID, conexion):
     try:
-        repositorio_productos = RepositorioProductos(conexion)
-        repositorio_categorias = RepositorioCategorias(conexion)
+        servicio_inventario = ServicioInventario(conexion)
         print("\n[-----------Inventario de Productos-----------]\n")
-        productos = repositorio_productos.listar()
+        productos = servicio_inventario.listar_productos()
         for producto in productos:
             print("ID:", producto[0])
             print("Nombre:", producto[1])
@@ -109,8 +108,7 @@ def Inventario(name, cursorDB, userID, conexion):
         opcion:str = input("\n 1.- Eliminar producto\n 2.- Añadir producto\n 3.- Volver\n")
         if opcion == "1":
             select:str = input("\nIngrese el ID del producto a eliminar:\n")
-            repositorio_productos.eliminar(select)
-            conexion.commit()
+            servicio_inventario.eliminar_producto(select)
             print("\nProducto eliminado con éxito\n")
             Inventario(name, cursorDB, userID, conexion)
         elif opcion == "2":
@@ -118,12 +116,11 @@ def Inventario(name, cursorDB, userID, conexion):
             precio:str = input("\nIngrese su precio:\n")
             unidades:str = input("\nIngrese la cantidad a añadir:\n")
             print("\nIngrese el ID de la categoría a la que pertenece  (ID):\n")
-            categorias = repositorio_categorias.listar_id_nombre()
+            categorias = servicio_inventario.listar_categorias_id_nombre()
             for categoria in categorias:
                 print("ID:", categoria[0], " NOMBRE: ", categoria[1])
             id_categoria:int = int(input("\n"))
-            repositorio_productos.crear(nombre, precio, unidades, id_categoria)
-            conexion.commit()
+            servicio_inventario.agregar_producto(nombre, precio, unidades, id_categoria)
             print("\nProducto añadido con éxito\n")
             Inventario(name, cursorDB, userID, conexion)
         elif opcion == "3":
@@ -136,9 +133,9 @@ def Inventario(name, cursorDB, userID, conexion):
 
 def Categorias(name, userID, cursorDB, conexion):
     try:
-        repositorio_categorias = RepositorioCategorias(conexion)
+        servicio_inventario = ServicioInventario(conexion)
         print("[-----------------Categorías-----------------]")
-        categorias = repositorio_categorias.listar()
+        categorias = servicio_inventario.listar_categorias()
         for categoria in categorias:
             print("ID:", categoria[0])
             print("Nombre:", categoria[1])
@@ -147,15 +144,13 @@ def Categorias(name, userID, cursorDB, conexion):
         opcion = input("\n 1.- Eliminar categoría\n 2.- Añadir categoría\n 3.- Volver\n")
         if opcion == "1":
             select = input("\nIngrese el ID de la categoría a eliminar:\n ")
-            repositorio_categorias.eliminar(select)
-            conexion.commit()
+            servicio_inventario.eliminar_categoria(select)
             print("Categoría eliminada con éxito")
             Categorias(name, userID, cursorDB, conexion) 
         elif opcion == "2":
             nombre = input("\nIngrese el nombre de la categoría a añadir:\n")
             descripcion = input("\nIngrese su Descripción: \n")
-            repositorio_categorias.crear(nombre, descripcion)
-            conexion.commit()
+            servicio_inventario.agregar_categoria(nombre, descripcion)
             print("\nCategoría añadida con éxito añadido con éxito\n")
             Categorias(name, userID, cursorDB, conexion)  
         elif opcion == "3":
