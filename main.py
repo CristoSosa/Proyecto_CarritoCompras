@@ -1,48 +1,20 @@
 import bcrypt
-import msvcrt
 import sys
 
 from base_datos import BaseDatos
+from interfaz import leer_contrasena
 
 base_datos = BaseDatos()
-
-def input_password(mensaje):
-    print(mensaje, end="", flush=True)
-    password = ""
-    while True:
-        tecla = msvcrt.getch()
-
-        if tecla in (b"\r", b"\n"):
-            print()
-            return password
-
-        if tecla == b"\x08":
-            if password:
-                password = password[:-1]
-                print("\b \b", end="", flush=True)
-            continue
-
-        if tecla in (b"\x00", b"\xe0"):
-            msvcrt.getch()
-            continue
-
-        try:
-            caracter = tecla.decode("utf-8")
-        except UnicodeDecodeError:
-            continue
-
-        password += caracter
-        print("*", end="", flush=True)
 
 def register_user(cursorDB, conexion):
     print("[-------¡Holaaaa!, Bienvenid@ nuevo usuario a nuestra app MercadoVentas-------]") 
     name = input("\nIngrese su nombre completo: ")
-    password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-    passwordC = input_password("Confirma tu contraseña: ")
+    password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+    passwordC = leer_contrasena("Confirma tu contraseña: ")
     while password != passwordC:
         print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-        password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-        passwordC = input_password("Confirma tu contraseña: ")
+        password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+        passwordC = leer_contrasena("Confirma tu contraseña: ")
     pwd = password.encode('utf-8')
     encrypt1 = bcrypt.gensalt()
     contraEncriptada = bcrypt.hashpw(pwd, encrypt1)     
@@ -56,12 +28,12 @@ def register_user(cursorDB, conexion):
 def register_admin(cursorDB, conexion):
     print("[-------¡Holaaaa!, Bienvenid@ nuevo empleado a nuestra app MercadoVentas-------]")
     name = input("\nIngrese su nombre completo: ")
-    password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-    passwordC = input_password("Confirma tu contraseña: ") 
+    password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+    passwordC = leer_contrasena("Confirma tu contraseña: ") 
     while password != passwordC:
         print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-        password = input_password("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-        passwordC = input_password("Confirma tu contraseña: ")    
+        password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+        passwordC = leer_contrasena("Confirma tu contraseña: ")    
     pwd = password.encode('utf-8')
     encrypt2 = bcrypt.gensalt()
     contraEncriptada = bcrypt.hashpw(pwd, encrypt2)    
@@ -76,7 +48,7 @@ def login():
     print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
     mail = input("Ingrese su correo: ")
     conexion, cursorDB = base_datos.conectar()
-    password = input_password("Ingrese su contraseña: ")
+    password = leer_contrasena("Ingrese su contraseña: ")
     cursorDB.execute("SELECT CORREO, CONTRASENA FROM USUARIOS WHERE CORREO = ?", (mail,))
     user = cursorDB.fetchone() 
     if user:
