@@ -40,9 +40,14 @@ def leer_contrasena(mensaje):
 def leer_contrasena_valida(mensaje):
     password = leer_contrasena(mensaje)
 
+    if es_cancelacion(password):
+        return None
+
     while not contrasena_valida(password):
         print("\nLa contraseña debe tener al menos una mayúscula y un número.\n")
         password = leer_contrasena(mensaje)
+        if es_cancelacion(password):
+            return None
 
     return password
 
@@ -61,6 +66,9 @@ def contrasena_valida(password):
     
     return contiene_mayuscula and contiene_numero
 
+def es_cancelacion(valor):
+    return valor.strip().lower() == "cancelar"
+
 class InterfazConsola:
     def __init__(self, base_datos):
         self.base_datos = base_datos
@@ -73,88 +81,138 @@ class InterfazConsola:
         self.base_datos.cerrar(self.conexion)
 
     def registrar_usuario(self):
-        print("[-------¡Holaaaa!, Bienvenid@ nuevo usuario a nuestra app MercadoVentas-------]")
-        nombre = input("\nIngrese su nombre completo: ")
-        password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-        password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
+        self.registrar_cuenta("usuario")
 
-        while password != password_confirmacion:
-            print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-            password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-            password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
+    def registrar_empleado(self):
+        self.registrar_cuenta("empleado")
 
+    def registrar_cuenta(self, tipo):
+        if tipo == "usuario":
+            print("[-------¡Holaaaa!, Bienvenid@ nuevo usuario a nuestra app MercadoVentas-------]")
+        elif tipo == "empleado":
+            print("[-------¡Holaaaa!, Bienvenid@ nuevo empleado a nuestra app MercadoVentas-------]")
+        else:
+            print("Tipo de cuenta inválido.")
+            self.menu()
+            return
+
+        nombre = input("\nIngrese su nombre completo o escriba 'cancelar': ")
+        if es_cancelacion(nombre):
+            print("Registro cancelado.")
+            self.menu()
+            return
+        
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
-        correo = input("Ingrese su correo electrónico: ").strip().lower()
+        numero = input("Ingrese su número de teléfono o escriba 'cancelar': ").strip()
+        if es_cancelacion(numero):
+            print("Registro cancelado.")
+            self.menu()
+            return
+        
+        while not servicio_autenticacion.numero_valido(numero):
+            print("Número inválido. Ingrese un numero de 10 dígitos.")
+            numero = input("Ingrese su número de teléfono o escriba 'cancelar': ").strip()
 
+            if es_cancelacion(numero):
+                print("Registro cancelado.")
+                self.menu()
+                return
+            
+        correo = input("Ingrese su correo electrónico o escriba 'cancelar': ").strip().lower()
+        if es_cancelacion(correo):
+            print("Registro cancelado.")
+            self.menu()
+            return
+        
         while not servicio_autenticacion.correo_valido(correo) or servicio_autenticacion.correo_registrado(correo):
             if not servicio_autenticacion.correo_valido(correo):
                 print("Correo inválido. Intente con gmail, hotmail, outlook o culiacan.tecnm.mx")
             elif servicio_autenticacion.correo_registrado(correo):
                 print("Ese correo ya está registrado. Inténtelo de nuevo.")
-            correo = input("Ingrese su correo electrónico: ").strip().lower()
+            correo = input("Ingrese su correo electrónico o escriba 'cancelar': ").strip().lower()
+            if es_cancelacion(correo):
+                print("Registro cancelado.")
+                self.menu()
+                return
 
-        numero = input("Ingrese su número de teléfono: ").strip()
-
-        while not servicio_autenticacion.numero_valido(numero):
-            print("Numero inválido. Ingrese un numero de 10 dígitos.")
-            numero = input("Ingrese su número de teléfono: ").strip()
-
-        servicio_autenticacion.registrar_usuario(nombre, password, correo, numero)
-
-        print("Usuario registrado exitosamente.")
-        self.iniciar_sesion()
-
-    def registrar_admin(self):
-        print("[-------¡Holaaaa!, Bienvenid@ nuevo empleado a nuestra app MercadoVentas-------]")
-        nombre = input("\nIngrese su nombre completo: ")
-        password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-        password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
-
+        password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D) o escriba 'cancelar': ")
+        if password is None:
+            print("Registro cancelado.")
+            self.menu()
+            return
+        
+        password_confirmacion = leer_contrasena("Confirma tu contraseña o escriba 'cancelar': ")
+        if es_cancelacion(password_confirmacion):
+            print("Registro cancelado.")
+            self.menu()
+            return
+        
         while password != password_confirmacion:
             print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-            password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
-            password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
+            password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D) o escriba 'cancelar': ")
+            if password is None:
+                print("Registro cancelado.")
+                self.menu()
+                return
+            password_confirmacion = leer_contrasena("Confirma tu contraseña o escriba 'cancelar': ")
+            if es_cancelacion(password_confirmacion):
+                print("Registro cancelado.")
+                self.menu()
+                return
 
-        servicio_autenticacion = ServicioAutenticacion(self.conexion)
-        correo = input("Ingrese su correo electrónico: ").strip().lower()
+        print("\n[---------- Confirmación de cuenta ----------]")
+        print("Tipo de cuenta:", tipo)
+        print("Nombre:", nombre)
+        print("Correo:", correo)
+        print("Teléfono:", numero)
+        print("----------------------------------------------")
 
-        while not servicio_autenticacion.correo_valido(correo) or servicio_autenticacion.correo_registrado(correo):
-            if not servicio_autenticacion.correo_valido(correo):
-                print("Correo inválido. Intente con gmail, hotmail, outlook, culiacan.tecnm.mx")
-            elif servicio_autenticacion.correo_registrado(correo):
-                print("Ese correo ya está registrado. Inténtelo de nuevo.")
-            correo = input("Ingrese su correo electrónico: ").strip().lower()
+        confirmacion_cuenta = input("\n¿Desea crear esta cuenta?\n 1.- Sí\n 2.- No, cancelar\nEscriba su respuesta: ")
+        if confirmacion_cuenta != "1":
+            print("Registro cancelado.")
+            self.menu()
+            return
 
-        numero = input("Ingrese su número de teléfono: ").strip()
-
-        while not servicio_autenticacion.numero_valido(numero):
-            print("Número inválido. Ingrese un numero de 10 dígitos.")
-            numero = input("Ingrese su número de teléfono: ").strip()
-
-        servicio_autenticacion.registrar_empleado(nombre, password, correo, numero)
-        print("Empleado registrado exitosamente.")
+        if tipo == "usuario":
+            servicio_autenticacion.registrar_usuario(nombre, password, correo, numero)
+            print("Usuario registrado exitosamente.")
+        elif tipo == "empleado":
+            servicio_autenticacion.registrar_empleado(nombre, password, correo, numero)
+            print("Empleado registrado exitosamente.")
         self.iniciar_sesion()
 
     def iniciar_sesion(self):
-        print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
-        correo = input("Ingrese su correo: ")
-        password = leer_contrasena("Ingrese su contraseña: ")
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
-        tipo_usuario, nombre, usuario_id = servicio_autenticacion.iniciar_sesion(correo, password)
 
-        if tipo_usuario == "usuario":
-            self.interfaz_usuario(nombre, usuario_id)
-            return
+        while True:
+            print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
 
-        if tipo_usuario == "empleado":
-            self.interfaz_empleado(nombre, usuario_id)
-            return
+            correo = input("Ingrese su correo o escriba 'cancelar': ").strip().lower()
+            if es_cancelacion(correo):
+                print("Inicio de sesión cancelado.")
+                self.menu()
+                return
 
-        print("Lo siento, los datos proporcionados no coinciden, favor de intentarlo denuevo")
-        self.iniciar_sesion()
+            password = leer_contrasena("Ingrese su contraseña o escriba 'cancelar': ")
+            if es_cancelacion(password):
+                print("Inicio de sesión cancelado.")
+                self.menu()
+                return
+
+            tipo_usuario, nombre, usuario_id = servicio_autenticacion.iniciar_sesion(correo, password)
+
+            if tipo_usuario == "usuario":
+                self.interfaz_usuario(nombre, usuario_id)
+                return
+
+            if tipo_usuario == "empleado":
+                self.interfaz_empleado(nombre, usuario_id)
+                return
+
+            print("Lo siento, los datos proporcionados no coinciden. Favor de intentarlo denuevo")
 
     def interfaz_usuario(self, nombre, usuario_id):
-        print("\n¡Hola de nuevo ", nombre[0], "!\n ¿Qué desea hacer hoy?\n 1.- Comprar producto\n 2.- Mostrar Carrito\n 3.- Salir al menú")
+        print("\n¡Hola de nuevo", nombre[0], "!\n ¿Qué desea hacer hoy?\n 1.- Comprar producto\n 2.- Mostrar Carrito\n 3.- Salir al menú")
         opcion = input("Escriba su respuesta: ")
 
         if opcion == "1":
@@ -165,11 +223,11 @@ class InterfazConsola:
             print("\nSaliendo al menú...")
             self.menu()
         else:
-            print("\nOpción inválida crrrrrack, vuelve a intentarlo")
+            print("\nOpción inválida. Por favor vuelva a intentarlo")
             self.interfaz_usuario(nombre, usuario_id)
 
     def interfaz_empleado(self, nombre, usuario_id):
-        print("\n¡Hola de nuevo ", nombre[0],"!\n¿Qué desea hacer hoy?\n 1.- Gestión de inventarios\n 2.- Ver categorías\n 3.- Registro de ventas\n 4.- Salir al menú")
+        print("\n¡Hola de nuevo", nombre[0],"!\n¿Qué desea hacer hoy?\n 1.- Gestión de inventarios\n 2.- Ver categorías\n 3.- Registro de ventas\n 4.- Salir al menú")
         opcion = input("Escriba su respuesta: ")
 
         if opcion == "1":
@@ -361,16 +419,17 @@ class InterfazConsola:
                 opcion_cuenta = input("Escriba su respuesta: ")
 
                 if opcion_cuenta == "1":
-                    self.registrar_admin()
+                    self.registrar_empleado()
                 elif opcion_cuenta == "2":
                     self.registrar_usuario()
                 else:
-                    print("\nOpción inválida crrrrrack, vuelve a intentarlo")
+                    print("\nOpción inválida, por favor vuelva a intentarlo")
                     self.menu()
             elif opcion == "3":
+                print("\n¡Gracias por usar MercadoVentas. Vuelva pronto!\n")
                 return
             else:
-                print("\nOpción inválida crrrrrack, vuelve a intentarlo")
+                print("\nOpción inválida, por favor vuelva a intentarlo")
                 self.menu()
         except Exception as e:
             print("Error:", e)
