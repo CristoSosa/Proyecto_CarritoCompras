@@ -58,7 +58,42 @@ class ServicioAutenticacion:
         usuario = self.repositorio_usuarios.buscar_por_correo(correo)
         empleado = self.repositorio_empleados.buscar_por_correo(correo)
         return usuario is not None or empleado is not None
+    
+    def correo_valido(self, correo):
+        correo = correo.strip().lower()
+        if correo.count("@") != 1:
+            return False
+        
+        posicion_arroba = correo.find("@")
+        posicion_punto = correo.rfind(".")
 
+        if posicion_arroba == 0:
+            return False
+        if posicion_punto == -1:
+            return False
+        if posicion_punto < posicion_arroba:
+            return False
+        if posicion_punto == len(correo) - 1:
+            return False
+
+        dominios_permitidos = ["gmail.com", "hotmail.com", "outlook.com", "culiacan.tecnm.mx"]
+        dominio = correo[posicion_arroba + 1:]
+
+        if dominio not in dominios_permitidos :
+            return False
+        
+        return True
+
+    def numero_valido(self, numero):
+        numero = numero.strip()
+
+        if len(numero) != 10:
+            return False
+        
+        if not numero.isdigit():
+            return False
+        
+        return True
 
 class ServicioInventario:
     def __init__(self, conexion):
