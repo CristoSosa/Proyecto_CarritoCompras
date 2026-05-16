@@ -37,6 +37,29 @@ def leer_contrasena(mensaje):
         contrasena += caracter
         print("*", end="", flush=True)
 
+def leer_contrasena_valida(mensaje):
+    password = leer_contrasena(mensaje)
+
+    while not contrasena_valida(password):
+        print("\nLa contraseña debe tener al menos una mayúscula y un número.\n")
+        password = leer_contrasena(mensaje)
+
+    return password
+
+def contrasena_valida(password):
+    if password.strip() == "":
+        return False
+    
+    contiene_mayuscula = False
+    contiene_numero = False
+
+    for caracter in password:
+        if caracter.isupper():
+            contiene_mayuscula = True
+        if caracter.isdigit():
+            contiene_numero = True
+    
+    return contiene_mayuscula and contiene_numero
 
 class InterfazConsola:
     def __init__(self, base_datos):
@@ -52,22 +75,29 @@ class InterfazConsola:
     def registrar_usuario(self):
         print("[-------¡Holaaaa!, Bienvenid@ nuevo usuario a nuestra app MercadoVentas-------]")
         nombre = input("\nIngrese su nombre completo: ")
-        password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+        password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
         password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
 
         while password != password_confirmacion:
             print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-            password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+            password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
             password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
 
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
-        correo = input("Ingrese su correo electrónico: ")
+        correo = input("Ingrese su correo electrónico: ").strip().lower()
 
-        while servicio_autenticacion.correo_registrado(correo):
-            print("Ese correo ya está registrado. Inténtelo de nuevo.")
-            correo = input("Ingrese su correo electrónico: ")
+        while not servicio_autenticacion.correo_valido(correo) or servicio_autenticacion.correo_registrado(correo):
+            if not servicio_autenticacion.correo_valido(correo):
+                print("Correo inválido. Intente con gmail, hotmail, outlook o culiacan.tecnm.mx")
+            elif servicio_autenticacion.correo_registrado(correo):
+                print("Ese correo ya está registrado. Inténtelo de nuevo.")
+            correo = input("Ingrese su correo electrónico: ").strip().lower()
 
-        numero = input("Ingrese su número de teléfono: ")
+        numero = input("Ingrese su número de teléfono: ").strip()
+
+        while not servicio_autenticacion.numero_valido(numero):
+            print("Numero inválido. Ingrese un numero de 10 dígitos.")
+            numero = input("Ingrese su número de teléfono: ").strip()
 
         servicio_autenticacion.registrar_usuario(nombre, password, correo, numero)
 
@@ -77,22 +107,29 @@ class InterfazConsola:
     def registrar_admin(self):
         print("[-------¡Holaaaa!, Bienvenid@ nuevo empleado a nuestra app MercadoVentas-------]")
         nombre = input("\nIngrese su nombre completo: ")
-        password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+        password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
         password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
 
         while password != password_confirmacion:
             print("\n¡Uups!, parece que las contraseñas no coinciden, vuelve a intentarlo\n")
-            password = leer_contrasena("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
+            password = leer_contrasena_valida("Ingrese una contraseña (¡Recuérdala siempre! ;D): ")
             password_confirmacion = leer_contrasena("Confirma tu contraseña: ")
 
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
-        correo = input("Ingrese su correo electrónico: ")
+        correo = input("Ingrese su correo electrónico: ").strip().lower()
 
-        while servicio_autenticacion.correo_registrado(correo):
-            print("Ese correo ya está registrado. Inténtelo de nuevo.")
-            correo = input("Ingrese su correo electrónico: ")
+        while not servicio_autenticacion.correo_valido(correo) or servicio_autenticacion.correo_registrado(correo):
+            if not servicio_autenticacion.correo_valido(correo):
+                print("Correo inválido. Intente con gmail, hotmail, outlook, culiacan.tecnm.mx")
+            elif servicio_autenticacion.correo_registrado(correo):
+                print("Ese correo ya está registrado. Inténtelo de nuevo.")
+            correo = input("Ingrese su correo electrónico: ").strip().lower()
 
-        numero = input("Ingrese su número de teléfono: ")
+        numero = input("Ingrese su número de teléfono: ").strip()
+
+        while not servicio_autenticacion.numero_valido(numero):
+            print("Número inválido. Ingrese un numero de 10 dígitos.")
+            numero = input("Ingrese su número de teléfono: ").strip()
 
         servicio_autenticacion.registrar_empleado(nombre, password, correo, numero)
         print("Empleado registrado exitosamente.")
