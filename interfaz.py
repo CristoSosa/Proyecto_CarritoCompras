@@ -7,6 +7,8 @@ from servicios import (
     ServicioVentas,
 )
 
+from ticket import generar_ticket
+
 
 def leer_contrasena(mensaje):
     print(mensaje, end="", flush=True)
@@ -489,11 +491,15 @@ class InterfazConsola:
                     print("  Pago:    $" + str(pago))
                     print("  Cambio:  $" + str(round(cambio, 2)))
                     print("-" * 25)
-                    
+                    articulos_ticket = []
                     for cosa in cosas_carrito:
                         subtotal = cosa[2] * cosa[3]
                         servicio_ventas.registrar_venta(usuario_id[0], cosa[0], subtotal)
-                    print("\nCompra realizada con éxito. Pronto llegará a tu casa porque sé dónde vives guap@\n") 
+                        articulos_ticket.append((cosa[1], cosa[4], cosa[2], cosa[3], subtotal))
+                        
+                    archivo_ticket = generar_ticket(nombre[0], articulos_ticket, total, pago, cambio)
+                    print("\nCompra realizada con éxito.")
+                    print("\nTicket generado: " + archivo_ticket)
                     self.interfaz_usuario(nombre, usuario_id)
                 else:
                     self.venta(nombre, usuario_id)         
