@@ -176,9 +176,12 @@ class ServicioVentas:
         self.repositorio_ventas = RepositorioVentas(conexion)
 
     def registrar_venta(self, usuario_id, producto_id, total):
-        self.repositorio_carrito.vaciar(usuario_id)
         self.repositorio_ventas.crear(usuario_id, producto_id, total)
         self.conexion.commit()
 
+    def vaciar_carrito(self, usuario_id):
+        self.repositorio_carrito.vaciar(usuario_id)
+        self.conexion.commit()
+        
     def listar_todas(self):
         return self.repositorio_ventas.listar_todas()
