@@ -69,6 +69,13 @@ def contrasena_valida(password):
 def es_cancelacion(valor):
     return valor.strip().lower() == "cancelar"
 
+def leer_entero(mensaje):  
+    while True:
+        valor = input(mensaje)
+        if valor.strip().isdigit():
+            return int(valor)
+        print("Entrada inválida. Por favor ingrese un número entero.")
+
 class InterfazConsola:
     def __init__(self, base_datos):
         self.base_datos = base_datos
@@ -259,7 +266,7 @@ class InterfazConsola:
             opcion = input("\n 1.- Eliminar producto\n 2.- Añadir producto\n 3.- Volver\n")
 
             if opcion == "1":
-                producto_id = input("\nIngrese el ID del producto a eliminar:\n")
+                producto_id = leer_entero("\nIngrese el ID del producto a eliminar:\n")
                 servicio_inventario.eliminar_producto(producto_id)
                 print("\nProducto eliminado con éxito\n")
                 self.inventario(nombre, usuario_id)
@@ -273,7 +280,7 @@ class InterfazConsola:
                 for categoria in categorias:
                     print("ID:", categoria[0], " NOMBRE: ", categoria[1])
 
-                categoria_id = int(input("\n"))
+                categoria_id = leer_entero("\n")
                 servicio_inventario.agregar_producto(producto_nombre, precio, unidades, categoria_id)
                 print("\nProducto añadido con éxito\n")
                 self.inventario(nombre, usuario_id)
@@ -300,7 +307,7 @@ class InterfazConsola:
             opcion = input("\n 1.- Eliminar categoría\n 2.- Añadir categoría\n 3.- Volver\n")
 
             if opcion == "1":
-                categoria_id = input("\nIngrese el ID de la categoría a eliminar:\n ")
+                categoria_id = leer_entero("\nIngrese el ID de la categoría a eliminar:\n ")
                 servicio_inventario.eliminar_categoria(categoria_id)
                 print("Categoría eliminada con éxito")
                 self.categorias(nombre, usuario_id)
@@ -451,3 +458,5 @@ class InterfazConsola:
             print("Error en la base de datos:", e)
 
         self.interfaz_empleado(nombre, usuario_id)
+
+        
