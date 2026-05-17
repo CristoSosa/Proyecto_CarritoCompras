@@ -228,7 +228,7 @@ class InterfazConsola:
 
     def interfaz_usuario(self, nombre, usuario_id):
         print("\n¡Hola de nuevo", nombre[0], "!\n ¿Qué desea hacer hoy?\n 1.- Comprar producto\n 2.- Mostrar Carrito\n 3.- Salir al menú")
-        opcion = input("Escriba su respuesta: ")
+        opcion = input("\nEscriba su respuesta: ")
 
         if opcion == "1":
             self.compra(nombre, usuario_id)
@@ -433,15 +433,30 @@ class InterfazConsola:
         try:
             servicio_compras = ServicioCompras(self.conexion)
             servicio_ventas = ServicioVentas(self.conexion)
-            print("[---------Carrito de ", nombre[0], "----------]")
+            print("\n[------------------Carrito de ", nombre[0], "-------------------]")
             cosas_carrito = servicio_compras.listar_carrito(usuario_id[0])
 
+            "Condicion para verificar si el carrito está vacío"
+            if not cosas_carrito:
+                print("\nTu carrito está vacío. Regresando al menú principal...\n")
+                self.interfaz_usuario(nombre, usuario_id)
+                return
+            
+            "Mejorar la presentación del carrito"
+            print("%-5s | %-20s | %-12s | %-10s | %-20s" % ("ID", "Producto", "Precio", "Cantidad", "Categoría"))
+            print("-" * 80)
+            
             for cosa in cosas_carrito:
-                print("ID: ", cosa[0], "Producto:", cosa[1], "Categoría:", cosa[4])
+                print("%-5s | %-20s | %-12s | %-10s | %-20s" % (cosa[0], cosa[1], str(cosa[2]), cosa[3],  cosa[4]))
 
-            opcion = input("\n 1.- Proceder al pago\n 2.- Eliminar artículo\n 3.- Regresar\n")
+            print("\nElige una opción: \n 1.- Proceder al pago\n 2.- Eliminar artículo\n 3.- Regresar\n")
+            opcion = input("Escriba su respuesta: ")
 
+            "Mejorar logica del carrito"
             if opcion == "1":
+                print("-" * 80)
+                print("%-20s | %-10s | %-10s | %-20s | %-10s" % ("Producto", "Categoría", "Cantidad", "Precio unitario", "Subtotal"))
+                print("-" * 80)
                 total = 0
                 for cosa in cosas_carrito:
                     nombre_producto = cosa[1]
@@ -449,7 +464,21 @@ class InterfazConsola:
                     cantidad = cosa[3]
                     subtotal = precio_unidad * cantidad
                     total += subtotal
-                    print("Producto:", nombre_producto, "Categoría:", cosa[3], "Cantidad:", cantidad, "Precio unitario:", precio_unidad, "Subtotal:", subtotal)
+                    
+                    print("%-20s | %-10s | %-10s | %-20s | %-10s" % (nombre_producto, cosa[4], str(precio_unidad), cantidad, str(subtotal)))
+                print("-" * 80)
+                print("Total a pagar: $", str(total))
+                print("\n¿Desea proceder al pago?\n 1.- Si \n 2.- No, eliminar artículo\n")
+                opcion = input("Escriba su respuesta: ")
+                    
+                if opcion == "1":
+                    for cosa in cosas_carrito:
+                        subtotal = cosa[2] * cosa[3]
+                        servicio_ventas.registrar_venta(usuario_id[0], cosa[0], subtotal)
+                    print("\nCompra realizada con éxito. Pronto llegará a tu casa porque sé dónde vives guap@\n") 
+                    self.interfaz_usuario(nombre, usuario_id)
+                else:
+                    self.venta(nombre, usuario_id)         
             elif opcion == "2":
                 ids_validos = [c[0] for c in cosas_carrito]
                 articulo_id = leer_entero_valido("\nIngrese el ID del artículo a eliminar: ", ids_validos)
@@ -461,14 +490,6 @@ class InterfazConsola:
             else:
                 print("\nOpción inválida crrrrrack, vuelve a intentarlo")
                 self.venta(nombre, usuario_id)
-
-            print("\nTotal a pagar:", total)
-            opcion = input("\n¿Desea continuar?\n 1.- Si \n 2.- Regresar\n")
-
-            if opcion == "1":
-                servicio_ventas.registrar_venta(usuario_id[0], cosa[0], subtotal)
-                print("\nCompra realizada con éxito. Pronto llegará a tu casa porque sé dónde vives guap@\n")
-                self.interfaz_usuario(nombre, usuario_id)
         except Exception as e:
             print("Error:", e)
 
