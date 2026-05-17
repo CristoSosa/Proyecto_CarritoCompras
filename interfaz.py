@@ -202,7 +202,7 @@ class InterfazConsola:
         servicio_autenticacion = ServicioAutenticacion(self.conexion)
 
         while True:
-            print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
+            print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]")
 
             correo = input("Ingrese su correo o escriba 'cancelar': ").strip().lower()
             if es_cancelacion(correo):
@@ -229,7 +229,10 @@ class InterfazConsola:
             print("Lo siento, los datos proporcionados no coinciden. Favor de intentarlo denuevo")
 
     def interfaz_usuario(self, nombre, usuario_id):
-        print("\n¡Hola de nuevo", nombre[0], "!\n ¿Qué desea hacer hoy?\n 1.- Comprar producto\n 2.- Mostrar Carrito\n 3.- Salir al menú")
+        print("\n[" + "-" * 63 + "]")
+        print("¡Hola de nuevo", nombre[0] + "!")
+        print("\n     ¿Qué desea hacer hoy?\n        1.- Comprar producto\n        2.- Mostrar Carrito\n        3.- Salir al menú")
+        print("[" + "-" * 63 + "]")
         opcion = input("\nEscriba su respuesta: ")
 
         if opcion == "1":
@@ -387,28 +390,29 @@ class InterfazConsola:
             servicio_compras = ServicioCompras(self.conexion)
             print("\n¿Qué te interesa hoy? He aquí nuestras secciones:\n")
             categorias = servicio_compras.listar_categorias_id_nombre()
-            print("[------------CATEGORÍAS------------]")
-
+            print("[-------------CATEGORÍAS------------]")
+            print("%-5s | %-25s" % ("ID", "Nombre"))
+            print("[" + "-" * 35 + "]")
             for categoria in categorias:
-                print("______________________________________")
-                print(f"ID: {categoria[0]} [", categoria[1], "]")
-                print("______________________________________")
+                print("%-5s | %-25s" % (categoria[0], categoria[1]))
+            print("[" + "-" * 35 + "]")
 
             opcion = input("\nSelecciona la categoría que más te interese: ")
             productos = servicio_compras.listar_productos_por_categoria(opcion)
-            print("[-------------------------------PRODUCTOS------------------------------]")
-
+            print("\n[--------------------------PRODUCTOS-------------------------]")
+            print("%-5s | %-25s | %-10s | %-10s" % ("ID", "Producto", "Precio", "Stock"))
+            print("[" + "-" * 60 + "]")
             for producto in productos:
-                print("________________________________________________________________________")
-                print(f"ID: {producto[0]} [", producto[1], " ", producto[2], " ", producto[3], "]")
-                print("________________________________________________________________________")
+                print("%-5s | %-25s | $%-9s | %-10s" % (producto[0], producto[1], producto[2], producto[3]))
+            print("[" + "-" * 60 + "]")
 
             ids_validos = [p[0] for p in productos]
-            producto_id = leer_entero_valido("\nSeleccione el producto a comprar (SU ID): \n", ids_validos)
-            opcion_carrito = input("\n¿Añadir al carrito?: \n 1.- Si\n 2.- No\n")
+            producto_id = leer_entero_valido("\nSeleccione el producto a comprar (SU ID): ", ids_validos)
+            print("\n¿Añadir al carrito?: \n 1.- Si\n 2.- No")
+            opcion_carrito = input("\nEscriba su respuesta: ")
 
             if opcion_carrito == "1":
-                unidades = leer_entero("\n¿Cuántas unidades?:\n")
+                unidades = leer_entero("\n¿Cuántas unidades?:")
                 for producto in productos:
                     if producto[0] == producto_id:
                         cantidad_disponible = producto[3]
@@ -423,7 +427,8 @@ class InterfazConsola:
                 print("Operación cancelada.")
                 self.compra(nombre, usuario_id)
 
-            opcion_carrito = input("Desea seguir comprando? \n 1.- Si\n 2.- No\n")
+            print("\n¿Desea seguir comprando? \n 1.- Si\n 2.- No\n")
+            opcion_carrito = input("Escriba su respuesta: ")
             if opcion_carrito == "1":
                 self.compra(nombre, usuario_id)
             elif opcion_carrito == "2":
@@ -435,22 +440,23 @@ class InterfazConsola:
         try:
             servicio_compras = ServicioCompras(self.conexion)
             servicio_ventas = ServicioVentas(self.conexion)
-            print("\n[------------------Carrito de ", nombre[0], "-------------------]")
+            print("\n[-------------------------------Carrito de ", nombre[0], "------------------------------]")
             cosas_carrito = servicio_compras.listar_carrito(usuario_id[0])
 
             "Condicion para verificar si el carrito está vacío"
             if not cosas_carrito:
-                print("\nTu carrito está vacío. Regresando al menú principal...\n")
+                print("Tu carrito está vacío. Regresando al menú principal...")
+                print("[" + "-" * 80 + "]") 
                 self.interfaz_usuario(nombre, usuario_id)
                 return
             
-            "Mejorar la presentación del carrito"
             print("%-5s | %-20s | %-12s | %-10s | %-20s" % ("ID", "Producto", "Precio", "Cantidad", "Categoría"))
-            print("-" * 80)
+            print("[" + "-" * 78 + "]")
             
             for cosa in cosas_carrito:
                 print("%-5s | %-20s | %-12s | %-10s | %-20s" % (cosa[0], cosa[1], str(cosa[2]), cosa[3],  cosa[4]))
 
+            print("[" + "-" * 78 + "]")
             print("\nElige una opción: \n 1.- Proceder al pago\n 2.- Eliminar artículo\n 3.- Regresar\n")
             opcion = input("Escriba su respuesta: ")
 
@@ -470,7 +476,7 @@ class InterfazConsola:
                     print("%-20s | %-10s | %-10s | %-20s | %-10s" % (nombre_producto, cosa[4], str(precio_unidad), cantidad, str(subtotal)))
                 print("-" * 80)
                 print("Total a pagar: $", str(total))
-                print("\n¿Desea proceder al pago?\n 1.- Si \n 2.- No, eliminar artículo\n")
+                print("\n¿Desea proceder al pago?\n 1.- Si \n 2.- No\n")
                 opcion = input("Escriba su respuesta: ")
                     
                 if opcion == "1":
@@ -494,9 +500,9 @@ class InterfazConsola:
                     articulos_ticket = []
                     for cosa in cosas_carrito:
                         subtotal = cosa[2] * cosa[3]
-                        servicio_ventas.registrar_venta(usuario_id[0], cosa[0], subtotal)
+                        servicio_ventas.registrar_venta(usuario_id[0], cosa[5], subtotal)
                         articulos_ticket.append((cosa[1], cosa[4], cosa[2], cosa[3], subtotal))
-                        
+                    servicio_ventas.vaciar_carrito(usuario_id[0])
                     archivo_ticket = generar_ticket(nombre[0], articulos_ticket, total, pago, cambio)
                     print("\nCompra realizada con éxito.")
                     print("\nTicket generado: " + archivo_ticket)
@@ -519,9 +525,11 @@ class InterfazConsola:
 
     def menu(self):
         try:
-            print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]\n")
-            print(" 1.- Iniciar sesión\n 2.- Crear una cuenta\n 3.- Salir")
-            opcion = input("Escriba su respuesta: ")
+            print("\n[-------¡Holaaaa!, Bienvenid@ a nuestra app MercadoVentas-------]")
+            print("     Elija una opción:")
+            print("        1.- Iniciar sesión\n        2.- Crear una cuenta\n        3.- Salir")
+            print("[" + "-" * 63 + "]")
+            opcion = input("\nEscriba su respuesta: ")
 
             if opcion == "1":
                 self.iniciar_sesion()

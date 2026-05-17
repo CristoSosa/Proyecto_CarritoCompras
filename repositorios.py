@@ -159,7 +159,7 @@ class RepositorioCarrito:
         cursor = self.conexion.cursor()
         cursor.execute(
             """
-            SELECT Carrito_Compras.ID, PRODUCTOS.NOMBRE_ARTICULO, PRODUCTOS.PRECIO, Carrito_Compras.CANTIDAD, CATEGORIA.NOMBRE
+            SELECT Carrito_Compras.ID, PRODUCTOS.NOMBRE_ARTICULO, PRODUCTOS.PRECIO, Carrito_Compras.CANTIDAD, CATEGORIA.NOMBRE, Carrito_Compras.PRODUCTO_ID
             FROM Carrito_Compras
             INNER JOIN PRODUCTOS ON Carrito_Compras.PRODUCTO_ID = PRODUCTOS.ID
             INNER JOIN CATEGORIA ON PRODUCTOS.CATEGORIA_ID = CATEGORIA.ID
