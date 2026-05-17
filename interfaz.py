@@ -76,6 +76,14 @@ def leer_entero(mensaje):
             return int(valor)
         print("Entrada inválida. Por favor ingrese un número entero.")
 
+def leer_entero_valido(mensaje, ids_validos):
+    while True:
+        valor = leer_entero(mensaje)
+        if valor in ids_validos:
+            return valor
+        print("ID inválido. Por favor ingrese un ID de la lista.")
+
+
 class InterfazConsola:
     def __init__(self, base_datos):
         self.base_datos = base_datos
@@ -266,7 +274,8 @@ class InterfazConsola:
             opcion = input("\n 1.- Eliminar producto\n 2.- Añadir producto\n 3.- Volver\n")
 
             if opcion == "1":
-                producto_id = leer_entero("\nIngrese el ID del producto a eliminar:\n")
+                ids_validos = [p[0] for p in productos]
+                producto_id = leer_entero_valido("\nIngrese el ID del producto a eliminar:\n", ids_validos)
                 servicio_inventario.eliminar_producto(producto_id)
                 print("\nProducto eliminado con éxito\n")
                 self.inventario(nombre, usuario_id)
@@ -280,7 +289,8 @@ class InterfazConsola:
                 for categoria in categorias:
                     print("ID:", categoria[0], " NOMBRE: ", categoria[1])
 
-                categoria_id = leer_entero("\n")
+                ids_validos = [c[0] for c in categorias]
+                categoria_id = leer_entero_valido("\n", ids_validos)
                 servicio_inventario.agregar_producto(producto_nombre, precio, unidades, categoria_id)
                 print("\nProducto añadido con éxito\n")
                 self.inventario(nombre, usuario_id)
@@ -307,7 +317,8 @@ class InterfazConsola:
             opcion = input("\n 1.- Eliminar categoría\n 2.- Añadir categoría\n 3.- Volver\n")
 
             if opcion == "1":
-                categoria_id = leer_entero("\nIngrese el ID de la categoría a eliminar:\n ")
+                ids_validos = [c[0] for c in categorias]
+                categoria_id = leer_entero_valido("\nIngrese el ID de la categoría a eliminar:\n ", ids_validos)
                 servicio_inventario.eliminar_categoria(categoria_id)
                 print("Categoría eliminada con éxito")
                 self.categorias(nombre, usuario_id)
@@ -344,11 +355,12 @@ class InterfazConsola:
                 print(f"ID: {producto[0]} [", producto[1], " ", producto[2], " ", producto[3], "]")
                 print("________________________________________________________________________")
 
-            producto_id = int(input("\nSeleccione el producto a comprar (SU ID): \n"))
+            ids_validos = [p[0] for p in productos]
+            producto_id = leer_entero_valido("\nSeleccione el producto a comprar (SU ID): \n", ids_validos)
             opcion_carrito = input("\n¿Añadir al carrito?: \n 1.- Si\n 2.- No\n")
 
             if opcion_carrito == "1":
-                unidades = int(input("\n¿Cuántas unidades?:\n"))
+                unidades = leer_entero("\n¿Cuántas unidades?:\n")
                 for producto in productos:
                     if producto[0] == producto_id:
                         cantidad_disponible = producto[3]
