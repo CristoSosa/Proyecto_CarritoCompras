@@ -472,6 +472,24 @@ class InterfazConsola:
                 opcion = input("Escriba su respuesta: ")
                     
                 if opcion == "1":
+                    while True:
+                        try:
+                            pago = float(input("\nIngrese el monto a pagar: $"))
+                            if pago < total:
+                                print("\nMonto insuficiente. Por favor ingrese al menos $", total)
+                            else:
+                                break
+                        except ValueError:
+                            print("\nEntrada inválida. Por favor ingrese un número válido.")
+                    cambio = pago - total
+                    print("\n" + "-" * 25)
+                    print("  RESUMEN DE PAGO")
+                    print("-" * 25)
+                    print("  Total:   $" + str(total))
+                    print("  Pago:    $" + str(pago))
+                    print("  Cambio:  $" + str(round(cambio, 2)))
+                    print("-" * 25)
+                    
                     for cosa in cosas_carrito:
                         subtotal = cosa[2] * cosa[3]
                         servicio_ventas.registrar_venta(usuario_id[0], cosa[0], subtotal)
