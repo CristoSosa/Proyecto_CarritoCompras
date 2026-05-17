@@ -74,16 +74,22 @@ def es_cancelacion(valor):
 def leer_entero(mensaje):  
     while True:
         valor = input(mensaje)
+        if es_cancelacion(valor):
+            return None
         if valor.strip().isdigit():
             return int(valor)
-        print("Entrada inválida. Por favor ingrese un número entero.")
+        print("Entrada inválida. Por favor ingrese un número entero o 'cancelar'.")
+
 
 def leer_entero_valido(mensaje, ids_validos):
     while True:
         valor = leer_entero(mensaje)
+        if valor is None:
+            return None
         if valor in ids_validos:
             return valor
-        print("ID inválido. Por favor ingrese un ID de la lista.")
+        print("ID inválido. Por favor ingrese un ID de la lista o 'cancelar'.")
+
 
 
 class InterfazConsola:
@@ -280,7 +286,11 @@ class InterfazConsola:
 
             if opcion == "1":
                 ids_validos = [p[0] for p in productos]
-                producto_id = leer_entero_valido("\nIngrese el ID del producto a eliminar:\n", ids_validos)
+                producto_id = leer_entero_valido("\nIngrese el ID del producto a eliminar (o 'cancelar'):\n", ids_validos)
+                if producto_id is None:
+                    print("\nOperación cancelada.\n")
+                    self.inventario(nombre, usuario_id)
+                    return
                 servicio_inventario.eliminar_producto(producto_id)
                 print("\nProducto eliminado con éxito\n")
                 self.inventario(nombre, usuario_id)
@@ -301,8 +311,13 @@ class InterfazConsola:
                 self.inventario(nombre, usuario_id)
             elif opcion == "3":
                 ids_validos = [p[0] for p in productos]
-                producto_id = leer_entero_valido("\nIngrese el ID del producto a editar:\n", ids_validos)
+                producto_id = leer_entero_valido("\nIngrese el ID del producto a editar (o 'cancelar'):\n", ids_validos)
+                if producto_id is None:
+                    print("\nOperación cancelada.\n")
+                    self.inventario(nombre, usuario_id)
+                    return
                 actual = servicio_inventario.obtener_producto(producto_id)
+
                 nuevo_nombre = input(f"\nNuevo nombre (actual: {actual[1]}, Enter para mantener):\n")
 
                 if nuevo_nombre.strip() == "":
@@ -351,10 +366,13 @@ class InterfazConsola:
 
             if opcion == "1":
                 ids_validos = [c[0] for c in categorias]
-                categoria_id = leer_entero_valido("\nIngrese el ID de la categoría a eliminar:\n ", ids_validos)
+                categoria_id = leer_entero_valido("\nIngrese el ID de la categoría a eliminar (o 'cancelar'):\n ", ids_validos)
+                if categoria_id is None:
+                    print("\nOperación cancelada.\n")
+                    self.categorias(nombre, usuario_id)
+                    return
                 servicio_inventario.eliminar_categoria(categoria_id)
-                print("Categoría eliminada con éxito")
-                self.categorias(nombre, usuario_id)
+
             elif opcion == "2":
                 categoria_nombre = input("\nIngrese el nombre de la categoría a añadir:\n")
                 descripcion = input("\nIngrese su Descripción: \n")
@@ -364,8 +382,13 @@ class InterfazConsola:
 
             elif opcion == "3":
                 ids_validos = [c[0] for c in categorias]
-                categoria_id = leer_entero_valido("\nIngrese el ID de la categoría a editar:\n", ids_validos)
+                categoria_id = leer_entero_valido("\nIngrese el ID de la categoría a editar (o 'cancelar'):\n", ids_validos)
+                if categoria_id is None:
+                    print("\nOperación cancelada.\n")
+                    self.categorias(nombre, usuario_id)
+                    return
                 actual = servicio_inventario.obtener_categoria(categoria_id)
+
                 nuevo_nombre = input(f"\nNuevo nombre (actual: {actual[1]}, Enter para mantener):\n")
 
                 if nuevo_nombre.strip() == "":
