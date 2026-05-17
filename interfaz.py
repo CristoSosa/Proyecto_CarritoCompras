@@ -271,7 +271,7 @@ class InterfazConsola:
                 print("Categoría:", producto[4])
                 print("----------------------------------------------")
 
-            opcion = input("\n 1.- Eliminar producto\n 2.- Añadir producto\n 3.- Volver\n")
+            opcion = input("\n 1.- Eliminar producto\n 2.- Añadir producto\n 3.- Editar producto\n 4.- Volver\n")
 
             if opcion == "1":
                 ids_validos = [p[0] for p in productos]
@@ -295,7 +295,35 @@ class InterfazConsola:
                 print("\nProducto añadido con éxito\n")
                 self.inventario(nombre, usuario_id)
             elif opcion == "3":
+                ids_validos = [p[0] for p in productos]
+                producto_id = leer_entero_valido("\nIngrese el ID del producto a editar:\n", ids_validos)
+                actual = servicio_inventario.obtener_producto(producto_id)
+                nuevo_nombre = input(f"\nNuevo nombre (actual: {actual[1]}, Enter para mantener):\n")
+
+                if nuevo_nombre.strip() == "":
+                    nuevo_nombre = actual[1]
+                nuevo_precio = input(f"\nNuevo precio (actual: {actual[2]}, Enter para mantener):\n")
+
+                if nuevo_precio.strip() == "":
+                    nuevo_precio = actual[2]
+                nueva_cantidad = input(f"\nNueva cantidad (actual: {actual[3]}, Enter para mantener):\n")
+                
+                if nueva_cantidad.strip() == "":
+                    nueva_cantidad = actual[3]
+                categorias = servicio_inventario.listar_categorias_id_nombre()
+
+                for categoria in categorias:
+                    print("ID:", categoria[0], " NOMBRE: ", categoria[1])
+
+                ids_cat = [c[0] for c in categorias]
+                nueva_categoria = leer_entero_valido(f"\nNuevo ID de categoría (actual: {actual[4]}):\n", ids_cat)
+                servicio_inventario.actualizar_producto(producto_id, nuevo_nombre, nuevo_precio, nueva_cantidad, nueva_categoria)
+                print("\nProducto actualizado con éxito\n")
+                self.inventario(nombre, usuario_id)
+            elif opcion == "4":
                 self.interfaz_empleado(nombre, usuario_id)
+
+
             else:
                 print("\nOpción inválida crrrrrack, vuelve a intentarlo")
                 self.inventario(nombre, usuario_id)
@@ -314,7 +342,7 @@ class InterfazConsola:
                 print("Descripción:", categoria[2])
                 print("----------------------------------------------")
 
-            opcion = input("\n 1.- Eliminar categoría\n 2.- Añadir categoría\n 3.- Volver\n")
+            opcion = input("\n 1.- Eliminar categoría\n 2.- Añadir categoría\n 3.- Editar categoría\n 4.- Volver\n")
 
             if opcion == "1":
                 ids_validos = [c[0] for c in categorias]
@@ -328,9 +356,27 @@ class InterfazConsola:
                 servicio_inventario.agregar_categoria(categoria_nombre, descripcion)
                 print("\nCategoría añadida con éxito añadido con éxito\n")
                 self.categorias(nombre, usuario_id)
+
             elif opcion == "3":
+                ids_validos = [c[0] for c in categorias]
+                categoria_id = leer_entero_valido("\nIngrese el ID de la categoría a editar:\n", ids_validos)
+                actual = servicio_inventario.obtener_categoria(categoria_id)
+                nuevo_nombre = input(f"\nNuevo nombre (actual: {actual[1]}, Enter para mantener):\n")
+
+                if nuevo_nombre.strip() == "":
+                    nuevo_nombre = actual[1]
+                nueva_descripcion = input(f"\nNueva descripción (actual: {actual[2]}, Enter para mantener):\n")
+
+                if nueva_descripcion.strip() == "":
+                    nueva_descripcion = actual[2]
+                servicio_inventario.actualizar_categoria(categoria_id, nuevo_nombre, nueva_descripcion)
+                print("\nCategoría actualizada con éxito\n")
+                self.categorias(nombre, usuario_id)
+            elif opcion == "4":
                 self.interfaz_empleado(nombre, usuario_id)
-                print("\nOpción inválida crrrrrack, vuelve a intentarlo")
+
+
+
         except Exception as e:
             print("Error en la databeis:", e)
 
@@ -405,7 +451,8 @@ class InterfazConsola:
                     total += subtotal
                     print("Producto:", nombre_producto, "Categoría:", cosa[3], "Cantidad:", cantidad, "Precio unitario:", precio_unidad, "Subtotal:", subtotal)
             elif opcion == "2":
-                articulo_id = input("\nIngrese el ID del artículo a eliminar: ")
+                ids_validos = [c[0] for c in cosas_carrito]
+                articulo_id = leer_entero_valido("\nIngrese el ID del artículo a eliminar: ", ids_validos)
                 servicio_compras.eliminar_articulo_carrito(usuario_id[0], articulo_id)
                 print("\nArtículo eliminado del carrito correctamente.")
                 self.venta(nombre, usuario_id)

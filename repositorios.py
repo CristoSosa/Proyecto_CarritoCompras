@@ -77,6 +77,18 @@ class RepositorioCategorias:
         cursor = self.conexion.cursor()
         cursor.execute("DELETE FROM CATEGORIA WHERE ID = ?", (categoria_id,))
 
+    def actualizar(self, categoria_id, nombre, descripcion):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "UPDATE CATEGORIA SET NOMBRE=?, DESCRIPCION=? WHERE ID=?",
+            (nombre, descripcion, categoria_id)
+        )
+
+    def buscar_por_id(self, categoria_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("SELECT * FROM CATEGORIA WHERE ID = ?", (categoria_id,))
+        return cursor.fetchone()
+
 
 class RepositorioProductos:
     def __init__(self, conexion):
@@ -109,6 +121,20 @@ class RepositorioProductos:
     def eliminar(self, producto_id):
         cursor = self.conexion.cursor()
         cursor.execute("DELETE FROM PRODUCTOS WHERE ID = ?", (producto_id,))
+    
+    def actualizar(self, producto_id, nombre, precio, cantidad, categoria_id):
+        cursor = self.conexion.cursor()
+        cursor.execute(
+            "UPDATE PRODUCTOS SET NOMBRE_ARTICULO=?, PRECIO=?, CANTIDAD=?, CATEGORIA_ID=? WHERE ID=?",
+            (nombre, precio, cantidad, categoria_id, producto_id)
+        )
+
+    def buscar_por_id(self, producto_id):
+        cursor = self.conexion.cursor()
+        cursor.execute("SELECT * FROM PRODUCTOS WHERE ID = ?", (producto_id,))
+        return cursor.fetchone()
+
+
 
     def actualizar_cantidad(self, producto_id, cantidad):
         cursor = self.conexion.cursor()

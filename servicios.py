@@ -125,6 +125,22 @@ class ServicioInventario:
     def agregar_categoria(self, nombre, descripcion):
         self.repositorio_categorias.crear(nombre, descripcion)
         self.conexion.commit()
+    
+    def actualizar_producto(self, producto_id, nombre, precio, cantidad, categoria_id):
+        self.repositorio_productos.actualizar(producto_id, nombre, precio, cantidad, categoria_id)
+        self.conexion.commit()
+
+    def actualizar_categoria(self, categoria_id, nombre, descripcion):
+        self.repositorio_categorias.actualizar(categoria_id, nombre, descripcion)
+        self.conexion.commit()
+
+    def obtener_producto(self, producto_id):
+        return self.repositorio_productos.buscar_por_id(producto_id)
+
+    def obtener_categoria(self, categoria_id):
+        return self.repositorio_categorias.buscar_por_id(categoria_id)
+
+
 
 
 class ServicioCompras:
