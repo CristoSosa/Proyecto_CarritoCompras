@@ -90,6 +90,23 @@ def leer_entero_valido(mensaje, ids_validos):
             return valor
         print("ID inválido. Por favor ingrese un ID de la lista o 'cancelar'.")
 
+def leer_texto_no_vacio(mensaje):
+    while True:
+        valor = input(mensaje)
+        if valor.strip() != "":
+            return valor.strip()
+        print("Este campo no puede quedar vacío. Inténtelo de nuevo.")
+
+def leer_flotante(mensaje):
+    while True:
+        valor = input(mensaje)
+        if valor.strip() == "":
+            print("Este campo no puede quedar vacío. Inténtelo de nuevo.")
+            continue
+        try:
+            return float(valor)
+        except ValueError:
+            print("Entrada inválida. Por favor ingrese un número (ej. 100 o 150.50).")
 
 
 class InterfazConsola:
@@ -295,9 +312,9 @@ class InterfazConsola:
                 print("\nProducto eliminado con éxito\n")
                 self.inventario(nombre, usuario_id)
             elif opcion == "2":
-                producto_nombre = input("\nIngrese el nombre del producto a añadir:\n")
-                precio = input("\nIngrese su precio:\n")
-                unidades = input("\nIngrese la cantidad a añadir:\n")
+                producto_nombre = leer_texto_no_vacio("\nIngrese el nombre del producto a añadir:\n")
+                precio = leer_flotante("\nIngrese su precio:\n")
+                unidades = leer_entero("\nIngrese la cantidad a añadir:\n")
                 print("\nIngrese el ID de la categoría a la que pertenece  (ID):\n")
                 categorias = servicio_inventario.listar_categorias_id_nombre()
 
@@ -374,8 +391,8 @@ class InterfazConsola:
                 servicio_inventario.eliminar_categoria(categoria_id)
 
             elif opcion == "2":
-                categoria_nombre = input("\nIngrese el nombre de la categoría a añadir:\n")
-                descripcion = input("\nIngrese su Descripción: \n")
+                categoria_nombre = leer_texto_no_vacio("\nIngrese el nombre de la categoría a añadir:\n")
+                descripcion = leer_texto_no_vacio("\nIngrese su Descripción: \n")
                 servicio_inventario.agregar_categoria(categoria_nombre, descripcion)
                 print("\nCategoría añadida con éxito añadido con éxito\n")
                 self.categorias(nombre, usuario_id)
@@ -581,14 +598,13 @@ class InterfazConsola:
             servicio_ventas = ServicioVentas(self.conexion)
             ventas = servicio_ventas.listar_todas()
 
+            print("\n[------------------ Todas las Ventas ------------------]")
             for venta in ventas:
-                print("[------------------ Todas las Ventas ------------------]")
-                for venta in ventas:
-                    print("ID:", venta[0])
-                    print("Usuario:", venta[1])
-                    print("Producto:", venta[2])
-                    print("Total:", venta[3])
-                    print("---------------------------------------------------------")
+                print("ID:", venta[0])
+                print("Usuario:", venta[1])
+                print("Producto:", venta[2])
+                print("Total:", venta[3])
+                print("---------------------------------------------------------")
         except Exception as e:
             print("Error en la base de datos:", e)
 
